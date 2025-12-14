@@ -1,4 +1,6 @@
-streamlit==1.38.0
-pandas==2.2.3
-numpy==2.1.2
-scikit-learn==1.5.2
+streamlit>=1.30.0
+pandas
+numpy
+scikit-learn
+requests
+gzip  # Usually not needed as it's in the standard library, but harmless to include
