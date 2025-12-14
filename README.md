@@ -1,4 +1,3 @@
-```markdown
 # Nova Books Recommendation System 2025
 ### NLP-Based Content Recommender Using TF-IDF & Cosine Similarity
 
@@ -68,12 +67,12 @@ Nova Books introduces a **content-driven, intelligent discovery tool** that matc
 ## App Demo (Animations & Interactions)
 
 <div align="center">
-  <img src="Books.gif" alt="Search by Book & Recommendations" width="90%">
+  <img src="https://github.com/harisyar-ai/nova-books-recommender/raw/main/Books.gif" alt="Search by Book & Recommendations" width="90%">
   <p><em>Search by book title and get instant similar recommendations with hover animations</em></p>
 </div>
 
 <div align="center">
-  <img src="Authors.gif" alt="Search by Author" width="90%">
+  <img src="https://github.com/harisyar-ai/nova-books-recommender/raw/main/Authors.gif" alt="Search by Author" width="90%">
   <p><em>Browse all books by your favorite author with pagination</em></p>
 </div>
 
@@ -94,8 +93,8 @@ This project uses the **Global Book Insights Dataset**, a high-quality public da
 | **Author**          | Name of the author                               |
 | **Description**     | Summary of the book from Goodreads               |
 | **Genres**          | One or multiple genres assigned to the book      |
-| **Average Rating**  | Average Goodreads rating (0–5 scale)             |
-|**Number of Ratings**| Total number of user ratings                     |
+| **Average Rating**  | Average Goodreads rating (0–5 scale)              |
+| **Number of Ratings**| Total number of user ratings                     |
 | **URL**             | Direct link to the Goodreads page                |
 
 ### **File Details**
@@ -144,7 +143,6 @@ The original dataset lacked book covers. I built a **hybrid scraper** (Goodreads
 │   └── tfidf_features.pkl.gz           ← Compressed TF-IDF matrix + vectorizer + df
 └── app/
     └── streamlit_app.py                ← Interactive Streamlit web app
-```
 
 ---
 
