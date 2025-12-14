@@ -143,7 +143,7 @@ The original dataset lacked book covers. I built a **hybrid scraper** (Goodreads
 │   └── tfidf_features.pkl.gz           ← Compressed TF-IDF matrix + vectorizer + df
 └── app/
     └── streamlit_app.py                ← Interactive Streamlit web app
-
+```
 ---
 
 ## How It Works (Step-by-Step)
