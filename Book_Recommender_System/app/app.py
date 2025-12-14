@@ -1,5 +1,4 @@
 # app/streamlit_app.py
-
 import streamlit as st
 import pickle
 from sklearn.metrics.pairwise import linear_kernel
@@ -34,7 +33,7 @@ if 'author_page' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state.search_history = []
 
-# LOAD ARTIFACTS - FROM HUGGING FACE (SILENT & CLEAN)
+# LOAD ARTIFACTS - CLEAN & SILENT LOADING
 @st.cache_resource
 def load_artifacts():
     file_url = "https://huggingface.co/harisyar/nova-books-recommender/resolve/main/tfidf_features.pkl.gz"
@@ -43,7 +42,7 @@ def load_artifacts():
     os.makedirs("models", exist_ok=True)
     
     if not os.path.exists(local_path):
-        with st.spinner("Loading book model for the first time... This takes just a moment."):
+        with st.spinner("Loading book model for the first time (14MB)... This takes just a moment."):
             response = requests.get(file_url)
             response.raise_for_status()
             with open(local_path, "wb") as f:
@@ -128,7 +127,7 @@ def get_popular_genres():
 
 popular_genres = get_popular_genres()
 
-# BOOK CARD STYLE (EXACTLY YOUR ORIGINAL)
+# BOOK CARD STYLE
 def render_goodreads_card(row):
     cover = get_cover_url(row.get('Cover_URL', ''))
     title = row['Book']
@@ -136,20 +135,20 @@ def render_goodreads_card(row):
     rating = row.get('Avg_Rating', 'N/A')
     genres = top_two_genres(row.get('Genres', ''))
     url = row.get('URL', '#')
-    genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:12px;'>{g}</small>" for g in genres])
+    genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:11px;'>{g}</small>" for g in genres])
     card_html = f"""
     <div class="book-card">
         <img src="{cover}" style="width:130px; height:200px; object-fit:cover; border-radius:8px;">
-        <h4 style="margin:8px 0 2px; font-size:16px; color:white;">{title}</h4>
-        <p style="color:#aaa; margin:2px 0; font-size:13px;">Author: {author}</p>
-        <p style="color:#FFD700; margin:4px 0;">⭐ {rating}</p>
+        <h4 style="margin:8px 0 2px; font-size:15px; color:white; line-height:1.2;">{title}</h4>
+        <p style="color:#aaa; margin:2px 0; font-size:12px;">Author: {author}</p>
+        <p style="color:#FFD700; margin:4px 0; font-size:13px;">⭐ {rating}</p>
         <div style="margin:6px 0;">{genre_tags}</div>
-        <a href="{url}" target="_blank" style="color:#FF4B4B; font-size:13px; text-decoration:none;">View on Goodreads →</a>
+        <a href="{url}" target="_blank" style="color:#FF4B4B; font-size:12px; text-decoration:none;">View on Goodreads →</a>
     </div>
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-# STYLES - YOUR ORIGINAL + MOBILE HORIZONTAL SCROLL FIX
+# STYLES - FIXED SCROLLBAR POSITION (BOTTOM ON ALL DEVICES)
 st.markdown(
     """
     <style>
@@ -157,30 +156,47 @@ st.markdown(
            animation: glow 2.5s ease-in-out infinite;}
     @keyframes glow {0%,100% {text-shadow:0 0 5px #FF4B4B;} 50% {text-shadow:0 0 25px #FF4B4B;}}
     .sub {text-align:center; color:#aaa; font-size:18px; margin-bottom:30px;}
-    .book-card {background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; text-align:center;
-                box-shadow:0 4px 12px rgba(0,0,0,0.2); margin:5px 0; transition:all 0.3s ease; cursor:pointer;}
-    .book-card:hover {transform:scale(1.08) translateY(-5px); box-shadow:0 0 25px rgba(255,80,80,0.55);}
-    /* Horizontal scroll container for mobile */
-    .horizontal-scroll {
+
+    /* Horizontal scrolling container for book cards */
+    .cards-container {
+        display: flex;
         overflow-x: auto;
-        overflow-y: hidden;
-        white-space: nowrap;
-        padding-bottom: 20px;
-        -webkit-overflow-scrolling: touch;
+        gap: 15px;
+        padding: 10px 0 30px 0; /* Extra bottom padding for scrollbar space */
+        scrollbar-width: thin;
+        scroll-padding-bottom: 20px; /* Forces scrollbar to bottom */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
-    .horizontal-scroll::-webkit-scrollbar {
-        height: 8px;
+    .cards-container::-webkit-scrollbar {
+        height: 10px; /* Thicker for visibility */
     }
-    .horizontal-scroll::-webkit-scrollbar-thumb {
+    .cards-container::-webkit-scrollbar-thumb {
         background: #FF4B4B;
         border-radius: 10px;
     }
-    .horizontal-scroll .book-card {
-        display: inline-block;
-        white-space: normal;
-        vertical-align: top;
-        width: 160px;
-        margin-right: 15px;
+    .cards-container::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
+    }
+
+    .book-card {
+        background:rgba(255,255,255,0.05);
+        padding:12px;
+        border-radius:12px;
+        text-align:center;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);
+        flex: 0 0 160px;
+        transition:all 0.3s ease;
+        cursor:pointer;
+    }
+    .book-card:hover {
+        transform:scale(1.08) translateY(-5px);
+        box-shadow:0 0 25px rgba(255,80,80,0.55);
+    }
+
+    /* Smaller text on mobile */
+    @media (max-width: 768px) {
+        .book-card h4 {font-size:14px !important;}
+        .book-card p {font-size:11px !important;}
     }
     </style>
     <div class="glow">📚 Nova Books Recommender </div>
@@ -198,11 +214,20 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-# PAGES - ALWAYS USE HORIZONTAL SCROLL (WORKS PERFECT ON MOBILE, ACCEPTABLE ON LAPTOP)
+# HELPER TO RENDER HORIZONTAL CARD ROWS
+def render_horizontal_cards(df_batch):
+    st.markdown('<div class="cards-container">', unsafe_allow_html=True)
+    cols = st.columns(len(df_batch))
+    for col, (_, row) in zip(cols, df_batch.iterrows()):
+        with col:
+            render_goodreads_card(row)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# PAGES (unchanged from last version)
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
-    
+   
     if book:
         if book != st.session_state.current_book:
             st.session_state.current_book = book
@@ -225,10 +250,7 @@ if page == "Search by Book":
             with st.spinner("Finding similar books..."):
                 recs = get_similar_books(book, n=5)
             st.subheader("Recommended Books")
-            st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
-            for _, row in recs.iterrows():
-                render_goodreads_card(row)
-            st.markdown('</div>', unsafe_allow_html=True)
+            render_horizontal_cards(recs)
 
 elif page == "Search by Author":
     st.header("Books by Author")
@@ -237,14 +259,11 @@ elif page == "Search by Author":
         books = get_author_books(author)
         total = len(books)
         page_num = st.session_state.author_page
-        start = page_num * 5
-        end = min(start + 5, total)
+        start = page_num * 10
+        end = min(start + 10, total)
         batch = books.iloc[start:end]
         st.subheader(f"Books by {author} (Page {page_num + 1})")
-        st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
-        for _, row in batch.iterrows():
-            render_goodreads_card(row)
-        st.markdown('</div>', unsafe_allow_html=True)
+        render_horizontal_cards(batch)
         
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
@@ -265,14 +284,11 @@ elif page == "Search by Genre":
         books = get_genre_books(genre, n=50)
         total = len(books)
         page_num = st.session_state.genre_page
-        start = page_num * 5
-        end = min(start + 5, total)
+        start = page_num * 10
+        end = min(start + 10, total)
         batch = books.iloc[start:end]
         st.subheader(f"Top Books in {genre} (Page {page_num + 1})")
-        st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
-        for _, row in batch.iterrows():
-            render_goodreads_card(row)
-        st.markdown('</div>', unsafe_allow_html=True)
+        render_horizontal_cards(batch)
         
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
@@ -289,11 +305,8 @@ elif page == "Search by Genre":
 elif page == "Recent Searches":
     st.header("Recent Searches")
     if st.session_state.search_history:
-        st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
-        for title in st.session_state.search_history:
-            if title in original_df.index:
-                render_goodreads_card(original_df.loc[title])
-        st.markdown('</div>', unsafe_allow_html=True)
+        recent_books = original_df.loc[[t for t in st.session_state.search_history if t in original_df.index]]
+        render_horizontal_cards(recent_books)
         if st.button("🗑️ Clear History", type="secondary", use_container_width=True):
             st.session_state.search_history = []
             st.rerun()
@@ -302,7 +315,6 @@ elif page == "Recent Searches":
 
 elif page == "About Us":
     st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>Muhammad Haris Afridi</h2>", unsafe_allow_html=True)
-    
     st.markdown("""
     Hey there! I'm a self-taught developer with a deep love for books, AI, and building things that make life better.
     Nova Books is my passion project — a smart book recommender built from scratch using machine learning.
