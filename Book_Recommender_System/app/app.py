@@ -1,5 +1,4 @@
 # app/streamlit_app.py
-
 import streamlit as st
 import pickle
 from sklearn.metrics.pairwise import linear_kernel
@@ -7,20 +6,18 @@ import ast
 import pandas as pd
 from collections import Counter
 import numpy as np
-import gzip  # Added for compressed loading
-
+import gzip
+import os
+import requests  # Added for downloading from Hugging Face
 
 # PAGE CONFIG
-
 st.set_page_config(
     page_title="Nova Books Recommender",
     page_icon="📚",
     layout="wide"
 )
 
-
 # SESSION STATE
-
 if 'preloaded_recs' not in st.session_state:
     st.session_state.preloaded_recs = None
 if 'current_book' not in st.session_state:
@@ -36,18 +33,30 @@ if 'author_page' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state.search_history = []
 
-
-# LOAD ARTIFACTS
-
+# LOAD ARTIFACTS - UPDATED TO DOWNLOAD FROM HUGGING FACE
 @st.cache_resource
-# def load_artifacts(pkl_path="D:\\PYTHON\\Project\\Book_Recommender_System\\models\\tfidf_features.pkl.gz"):  # Updated path to .gz
-def load_artifacts(pkl_path="models/tfidf_features.pkl.gz"):  # Updated path to .gz
-    with gzip.open(pkl_path, "rb") as f:  # Use gzip.open
+def load_artifacts():
+    file_url = "https://huggingface.co/harisyar/nova-books-recommender/resolve/main/tfidf_features.pkl.gz"
+    
+    local_path = "models/tfidf_features.pkl.gz"
+    
+    os.makedirs("models", exist_ok=True)
+    
+    if not os.path.exists(local_path):
+        st.info("Downloading book model (14MB)... One-time only, takes 10-30 seconds.")
+        response = requests.get(file_url)
+        response.raise_for_status()  # Will raise an error if download fails
+        with open(local_path, "wb") as f:
+            f.write(response.content)
+    
+    with gzip.open(local_path, "rb") as f:
         artifacts = pickle.load(f)
+    
     df = artifacts.get("df")
     tfidf_matrix = artifacts.get("tfidf_matrix")
     if df is None or tfidf_matrix is None:
         raise ValueError("tfidf_features.pkl.gz must contain 'df' and 'tfidf_matrix'")
+    
     df = df.set_index("Book", drop=False)
     return df, tfidf_matrix
 
@@ -57,9 +66,7 @@ if "Cover_URL" not in original_df.columns:
     st.error("Your dataframe must contain a 'Cover_URL' column.")
     st.stop()
 
-
 # HELPERS
-
 @st.cache_data
 def get_cover_url(cover_value):
     if pd.notna(cover_value) and str(cover_value).strip() not in ['', 'nan']:
@@ -85,9 +92,7 @@ def top_two_genres(genres_field):
             return parts[:2]
     return [s] if s else []
 
-
 # RECOMMENDERS
-
 @st.cache_data
 def get_similar_books(book_title, n=5):
     if book_title not in original_df.index:
@@ -122,9 +127,7 @@ def get_popular_genres():
 
 popular_genres = get_popular_genres()
 
-
 # BOOK CARD STYLE
-
 def render_goodreads_card(row):
     cover = get_cover_url(row.get('Cover_URL', ''))
     title = row['Book']
@@ -132,9 +135,7 @@ def render_goodreads_card(row):
     rating = row.get('Avg_Rating', 'N/A')
     genres = top_two_genres(row.get('Genres', ''))
     url = row.get('URL', '#')
-
     genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:12px;'>{g}</small>" for g in genres])
-
     card_html = f"""
     <div class="book-card">
         <img src="{cover}" style="width:130px; height:200px; object-fit:cover; border-radius:8px;">
@@ -145,12 +146,9 @@ def render_goodreads_card(row):
         <a href="{url}" target="_blank" style="color:#FF4B4B; font-size:13px; text-decoration:none;">View on Goodreads →</a>
     </div>
     """
-
     st.markdown(card_html, unsafe_allow_html=True)
 
-
 # STYLES (with hover animation + mobile responsive)
-
 st.markdown(
     """
     <style>
@@ -158,7 +156,7 @@ st.markdown(
            animation: glow 2.5s ease-in-out infinite;}
     @keyframes glow {0%,100% {text-shadow:0 0 5px #FF4B4B;} 50% {text-shadow:0 0 25px #FF4B4B;}}
     .sub {text-align:center; color:#aaa; font-size:18px; margin-bottom:30px;}
-    .book-card {background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; text-align:center; 
+    .book-card {background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; text-align:center;
                 box-shadow:0 4px 12px rgba(0,0,0,0.2); margin:5px 0; transition:all 0.3s ease; cursor:pointer;}
     .book-card:hover {transform:scale(1.08) translateY(-5px); box-shadow:0 0 25px rgba(255,80,80,0.55);}
     </style>
@@ -168,9 +166,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # SIDEBAR NAVIGATION
-
 with st.sidebar:
     st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>Navigation</h2>", unsafe_allow_html=True)
     page = st.radio(
@@ -180,11 +176,10 @@ with st.sidebar:
     )
 
 # PAGES
-
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
-    
+   
     if book:
         if book != st.session_state.current_book:
             st.session_state.current_book = book
@@ -192,7 +187,6 @@ if page == "Search by Book":
             if book not in st.session_state.search_history:
                 st.session_state.search_history.insert(0, book)
                 st.session_state.search_history = st.session_state.search_history[:20]
-
         selected = original_df.loc[book]
         col1, col2 = st.columns([1, 3])
         with col1:
@@ -204,7 +198,6 @@ if page == "Search by Book":
             st.write(f"**Rating:** ⭐ {selected.get('Avg_Rating', 'N/A')}")
             if pd.notna(selected.get('URL')):
                 st.markdown(f"[View on Goodreads]({selected['URL']})")
-
         if st.button("SHOW ME 5 SIMILAR BOOKS", type="primary", width="stretch"):
             with st.spinner("Finding similar books..."):
                 recs = get_similar_books(book, n=5)
@@ -213,10 +206,9 @@ if page == "Search by Book":
             for i, row in recs.iterrows():
                 with cols[i]:
                     render_goodreads_card(row)
-
 elif page == "Search by Author":
     st.header("Books by Author")
-    author = st.selectbox("Select Author:", [""] + list(original_df["Author"].unique()))  # Unsorted
+    author = st.selectbox("Select Author:", [""] + list(original_df["Author"].unique())) # Unsorted
     if author:
         books = get_author_books(author)
         total = len(books)
@@ -224,13 +216,11 @@ elif page == "Search by Author":
         start = page_num * 5
         end = min(start + 5, total)
         batch = books.iloc[start:end]
-
         st.subheader(f"Books by {author} (Page {page_num + 1})")
         cols = st.columns(5)
         for i in range(len(batch)):
             with cols[i]:
                 render_goodreads_card(batch.iloc[i])
-
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
             if page_num > 0 and st.button("← Previous"):
@@ -242,7 +232,6 @@ elif page == "Search by Author":
             if end < total and st.button("Next →"):
                 st.session_state.author_page += 1
                 st.rerun()
-
 elif page == "Search by Genre":
     st.header("Browse by Genre")
     genre = st.selectbox("Select Genre:", [""] + popular_genres)
@@ -253,13 +242,11 @@ elif page == "Search by Genre":
         start = page_num * 5
         end = min(start + 5, total)
         batch = books.iloc[start:end]
-
         st.subheader(f"Top Books in {genre} (Page {page_num + 1})")
         cols = st.columns(5)
         for i in range(len(batch)):
             with cols[i]:
                 render_goodreads_card(batch.iloc[i])
-
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
             if page_num > 0 and st.button("← Previous"):
@@ -271,7 +258,6 @@ elif page == "Search by Genre":
             if end < total and st.button("Next →"):
                 st.session_state.genre_page += 1
                 st.rerun()
-
 elif page == "Recent Searches":
     st.header("Recent Searches")
     if st.session_state.search_history:
@@ -286,23 +272,20 @@ elif page == "Recent Searches":
             st.rerun()
     else:
         st.info("No recent searches yet.")
-
 elif page == "About Us":
     st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>Muhammad Haris Afridi</h2>", unsafe_allow_html=True)
-    
+   
     st.markdown("""
     Hey there! I'm a self-taught developer with a deep love for books, AI, and building things that make life better.
     Nova Books is my passion project — a smart book recommender built from scratch using machine learning.
     I believe great books change lives, and I wanted to create a beautiful way to help people discover their next favorite read.
     """)
-
     st.markdown("<h3 style='color:#FF4B4B; font-size:20px; margin-top:30px;'>Project Info</h3>", unsafe_allow_html=True)
     st.markdown("""
     <span style='color:#FF6B6B;'>Nova Books</span> is a content-based recommender system using **TF-IDF + cosine similarity** on book title, author, description, and genres.
     It matches books with similar content — simple, fast, and accurate.
     This is an intermediate ML project focused on clean design and real usability.
     """, unsafe_allow_html=True)
-
     st.markdown("<h3 style='color:#FF4B4B; font-size:20px; margin-top:30px;'>Connect With Me</h3>", unsafe_allow_html=True)
     st.markdown("""
     <div style="display:flex; flex-direction:column; gap:18px; margin-top:25px; font-size:16px;">
@@ -320,12 +303,8 @@ elif page == "About Us":
         </div>
     </div>
     """, unsafe_allow_html=True)
-
     st.markdown("<p style='margin-top:40px; color:#ccc; font-size:16px;'>Thank you for using Nova Books! Let's discover amazing stories together 📚🧡.</p>", unsafe_allow_html=True)
 
-
 # FOOTER
-
 st.markdown("---")
 st.caption("© Built by Muhammad Haris Afridi | Powered by Streamlit & Hugging Face")
-
