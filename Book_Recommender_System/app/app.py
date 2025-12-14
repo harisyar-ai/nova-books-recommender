@@ -127,7 +127,7 @@ def get_popular_genres():
 
 popular_genres = get_popular_genres()
 
-# BOOK CARD STYLE
+# BOOK CARD STYLE - BIGGER COVERS ON MOBILE
 def render_goodreads_card(row):
     cover = get_cover_url(row.get('Cover_URL', ''))
     title = row['Book']
@@ -138,17 +138,17 @@ def render_goodreads_card(row):
     genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:11px;'>{g}</small>" for g in genres])
     card_html = f"""
     <div class="book-card">
-        <img src="{cover}" style="width:130px; height:200px; object-fit:cover; border-radius:8px;">
-        <h4 style="margin:8px 0 2px; font-size:15px; color:white; line-height:1.2;">{title}</h4>
-        <p style="color:#aaa; margin:2px 0; font-size:12px;">Author: {author}</p>
-        <p style="color:#FFD700; margin:4px 0; font-size:13px;">⭐ {rating}</p>
-        <div style="margin:6px 0;">{genre_tags}</div>
-        <a href="{url}" target="_blank" style="color:#FF4B4B; font-size:12px; text-decoration:none;">View on Goodreads →</a>
+        <img src="{cover}" class="cover-img">
+        <h4 class="book-title">{title}</h4>
+        <p class="book-author">Author: {author}</p>
+        <p class="book-rating">⭐ {rating}</p>
+        <div class="genre-tags">{genre_tags}</div>
+        <a href="{url}" target="_blank" class="goodreads-link">View on Goodreads →</a>
     </div>
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-# STYLES - FIXED SCROLLBAR POSITION (BOTTOM ON ALL DEVICES)
+# STYLES - LARGER BOOK COVERS ON MOBILE + SMOOTH HORIZONTAL SCROLL
 st.markdown(
     """
     <style>
@@ -157,18 +157,19 @@ st.markdown(
     @keyframes glow {0%,100% {text-shadow:0 0 5px #FF4B4B;} 50% {text-shadow:0 0 25px #FF4B4B;}}
     .sub {text-align:center; color:#aaa; font-size:18px; margin-bottom:30px;}
 
-    /* Horizontal scrolling container for book cards */
+    /* Horizontal scrolling container */
     .cards-container {
         display: flex;
         overflow-x: auto;
+        overflow-y: hidden;
         gap: 15px;
-        padding: 10px 0 30px 0; /* Extra bottom padding for scrollbar space */
+        padding: 10px 0 40px 0;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
         scrollbar-width: thin;
-        scroll-padding-bottom: 20px; /* Forces scrollbar to bottom */
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     .cards-container::-webkit-scrollbar {
-        height: 10px; /* Thicker for visibility */
+        height: 12px;
     }
     .cards-container::-webkit-scrollbar-thumb {
         background: #FF4B4B;
@@ -184,7 +185,7 @@ st.markdown(
         border-radius:12px;
         text-align:center;
         box-shadow:0 4px 12px rgba(0,0,0,0.2);
-        flex: 0 0 160px;
+        flex: 0 0 160px; /* Desktop card width */
         transition:all 0.3s ease;
         cursor:pointer;
     }
@@ -193,10 +194,30 @@ st.markdown(
         box-shadow:0 0 25px rgba(255,80,80,0.55);
     }
 
-    /* Smaller text on mobile */
+    .cover-img {
+        width:130px;
+        height:200px;
+        object-fit:cover;
+        border-radius:8px;
+    }
+    .book-title {margin:8px 0 2px; font-size:15px; color:white; line-height:1.2;}
+    .book-author {color:#aaa; margin:2px 0; font-size:12px;}
+    .book-rating {color:#FFD700; margin:4px 0; font-size:13px;}
+    .goodreads-link {color:#FF4B4B; font-size:12px; text-decoration:none;}
+
+    /* MOBILE OPTIMIZATIONS - BIGGER COVERS & CARDS */
     @media (max-width: 768px) {
-        .book-card h4 {font-size:14px !important;}
-        .book-card p {font-size:11px !important;}
+        .book-card {
+            flex: 0 0 200px; /* Wider card on mobile */
+        }
+        .cover-img {
+            width: 160px !important;   /* Bigger cover */
+            height: 240px !important;  /* Taller for impact */
+        }
+        .book-title {font-size: 14px !important;}
+        .book-author {font-size: 11px !important;}
+        .book-rating {font-size: 12px !important;}
+        .goodreads-link {font-size: 11px !important;}
     }
     </style>
     <div class="glow">📚 Nova Books Recommender </div>
@@ -223,7 +244,7 @@ def render_horizontal_cards(df_batch):
             render_goodreads_card(row)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# PAGES (unchanged from last version)
+# PAGES (unchanged)
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
