@@ -1,4 +1,5 @@
 # app/streamlit_app.py
+
 import streamlit as st
 import pickle
 from sklearn.metrics.pairwise import linear_kernel
@@ -33,7 +34,7 @@ if 'author_page' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state.search_history = []
 
-# LOAD ARTIFACTS - CLEAN & SILENT LOADING
+# LOAD ARTIFACTS - FROM HUGGING FACE (SILENT & CLEAN)
 @st.cache_resource
 def load_artifacts():
     file_url = "https://huggingface.co/harisyar/nova-books-recommender/resolve/main/tfidf_features.pkl.gz"
@@ -42,7 +43,7 @@ def load_artifacts():
     os.makedirs("models", exist_ok=True)
     
     if not os.path.exists(local_path):
-        with st.spinner("Loading book model for the first time (14MB)... This takes just a moment."):
+        with st.spinner("Loading book model for the first time... This takes just a moment."):
             response = requests.get(file_url)
             response.raise_for_status()
             with open(local_path, "wb") as f:
@@ -127,7 +128,7 @@ def get_popular_genres():
 
 popular_genres = get_popular_genres()
 
-# BOOK CARD STYLE - ORIGINAL
+# BOOK CARD STYLE (EXACTLY YOUR ORIGINAL)
 def render_goodreads_card(row):
     cover = get_cover_url(row.get('Cover_URL', ''))
     title = row['Book']
@@ -135,7 +136,9 @@ def render_goodreads_card(row):
     rating = row.get('Avg_Rating', 'N/A')
     genres = top_two_genres(row.get('Genres', ''))
     url = row.get('URL', '#')
+
     genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:12px;'>{g}</small>" for g in genres])
+
     card_html = f"""
     <div class="book-card">
         <img src="{cover}" style="width:130px; height:200px; object-fit:cover; border-radius:8px;">
@@ -146,9 +149,10 @@ def render_goodreads_card(row):
         <a href="{url}" target="_blank" style="color:#FF4B4B; font-size:13px; text-decoration:none;">View on Goodreads →</a>
     </div>
     """
+
     st.markdown(card_html, unsafe_allow_html=True)
 
-# STYLES - TRUE HORIZONTAL SCROLL, FULL WIDTH, NO EMPTY SPACE
+# STYLES - YOUR ORIGINAL + MOBILE HORIZONTAL SCROLL FIX
 st.markdown(
     """
     <style>
@@ -156,57 +160,34 @@ st.markdown(
            animation: glow 2.5s ease-in-out infinite;}
     @keyframes glow {0%,100% {text-shadow:0 0 5px #FF4B4B;} 50% {text-shadow:0 0 25px #FF4B4B;}}
     .sub {text-align:center; color:#aaa; font-size:18px; margin-bottom:30px;}
+    .book-card {background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; text-align:center; 
+                box-shadow:0 4px 12px rgba(0,0,0,0.2); margin:5px 0; transition:all 0.3s ease; cursor:pointer;}
+    .book-card:hover {transform:scale(1.08) translateY(-5px); box-shadow:0 0 25px rgba(255,80,80,0.55);}
 
-    .book-card {
-        background:rgba(255,255,255,0.05);
-        padding:12px;
-        border-radius:12px;
-        text-align:center;
-        box-shadow:0 4px 12px rgba(0,0,0,0.2);
-        transition:all 0.3s ease;
-        cursor:pointer;
-        flex: 0 0 auto;
-        width: 160px; /* Fixed card width for consistency */
-        margin: 0 8px;
-    }
-    .book-card:hover {
-        transform:scale(1.08) translateY(-5px);
-        box-shadow:0 0 25px rgba(255,80,80,0.55);
-    }
-
-    /* True horizontal carousel - full width, no wrapping */
-    .cards-container {
-        display: flex;
+    /* Horizontal scroll container for mobile */
+    .horizontal-scroll {
         overflow-x: auto;
         overflow-y: hidden;
-        gap: 0; /* Gap handled by card margin */
-        padding: 10px 0 40px 0;
-        width: 100%;
+        white-space: nowrap;
+        padding-bottom: 20px;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
-        scroll-snap-type: x mandatory;
     }
-    .cards-container > div {
-        flex: 0 0 auto;
-        scroll-snap-align: start;
+    .horizontal-scroll::-webkit-scrollbar {
+        height: 8px;
     }
-    .cards-container::-webkit-scrollbar {
-        height: 10px;
-    }
-    .cards-container::-webkit-scrollbar-thumb {
+    .horizontal-scroll::-webkit-scrollbar-thumb {
         background: #FF4B4B;
         border-radius: 10px;
     }
-
-    /* Mobile - smaller text only */
-    @media (max-width: 768px) {
-        .book-card h4 {font-size:14px !important;}
-        .book-card p {font-size:12px !important;}
-        .book-card a {font-size:12px !important;}
-        .book-card small {font-size:11px !important;}
+    .horizontal-scroll .book-card {
+        display: inline-block;
+        white-space: normal;
+        vertical-align: top;
+        width: 160px;
+        margin-right: 15px;
     }
     </style>
-    <div class="glow">📚 Nova Books Recommender </div>
+    <div class="glow">📚 Nova Books Recommendation System </div>
     <div class="sub">We Wish to Recommend Your Desired Books 🧡</div>
     """,
     unsafe_allow_html=True
@@ -221,14 +202,7 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-# HELPER TO RENDER HORIZONTAL CARDS - NO COLUMNS, PURE DIVS
-def render_horizontal_cards(df_batch):
-    st.markdown('<div class="cards-container">', unsafe_allow_html=True)
-    for _, row in df_batch.iterrows():
-        render_goodreads_card(row)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# PAGES
+# PAGES - ORIGINAL GRID ON DESKTOP, HORIZONTAL SCROLL ON MOBILE
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
@@ -240,6 +214,7 @@ if page == "Search by Book":
             if book not in st.session_state.search_history:
                 st.session_state.search_history.insert(0, book)
                 st.session_state.search_history = st.session_state.search_history[:20]
+
         selected = original_df.loc[book]
         col1, col2 = st.columns([1, 3])
         with col1:
@@ -251,12 +226,24 @@ if page == "Search by Book":
             st.write(f"**Rating:** ⭐ {selected.get('Avg_Rating', 'N/A')}")
             if pd.notna(selected.get('URL')):
                 st.markdown(f"[View on Goodreads]({selected['URL']})")
+
         if st.button("SHOW ME 5 SIMILAR BOOKS", type="primary", use_container_width=True):
             with st.spinner("Finding similar books..."):
                 recs = get_similar_books(book, n=5)
             st.subheader("Recommended Books")
-            render_horizontal_cards(recs)
+            # On mobile: horizontal scroll, on desktop: 5-column grid
+            if st.session_state.get("is_mobile", False):
+                st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
+                for _, row in recs.iterrows():
+                    render_goodreads_card(row)
+                st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                cols = st.columns(5)
+                for i, row in recs.iterrows():
+                    with cols[i]:
+                        render_goodreads_card(row)
 
+# (Same for other pages - keep your original 5-column grid on desktop, horizontal scroll on mobile)
 elif page == "Search by Author":
     st.header("Books by Author")
     author = st.selectbox("Select Author:", [""] + list(original_df["Author"].unique()))
@@ -264,12 +251,22 @@ elif page == "Search by Author":
         books = get_author_books(author)
         total = len(books)
         page_num = st.session_state.author_page
-        start = page_num * 10
-        end = min(start + 10, total)
+        start = page_num * 5
+        end = min(start + 5, total)
         batch = books.iloc[start:end]
+
         st.subheader(f"Books by {author} (Page {page_num + 1})")
-        render_horizontal_cards(batch)
-        
+        if st.session_state.get("is_mobile", False):
+            st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
+            for _, row in batch.iterrows():
+                render_goodreads_card(row)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            cols = st.columns(5)
+            for i in range(len(batch)):
+                with cols[i]:
+                    render_goodreads_card(batch.iloc[i])
+
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
             if page_num > 0 and st.button("← Previous"):
@@ -289,12 +286,22 @@ elif page == "Search by Genre":
         books = get_genre_books(genre, n=50)
         total = len(books)
         page_num = st.session_state.genre_page
-        start = page_num * 10
-        end = min(start + 10, total)
+        start = page_num * 5
+        end = min(start + 5, total)
         batch = books.iloc[start:end]
+
         st.subheader(f"Top Books in {genre} (Page {page_num + 1})")
-        render_horizontal_cards(batch)
-        
+        if st.session_state.get("is_mobile", False):
+            st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
+            for _, row in batch.iterrows():
+                render_goodreads_card(row)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            cols = st.columns(5)
+            for i in range(len(batch)):
+                with cols[i]:
+                    render_goodreads_card(batch.iloc[i])
+
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         with col_prev:
             if page_num > 0 and st.button("← Previous"):
@@ -310,8 +317,18 @@ elif page == "Search by Genre":
 elif page == "Recent Searches":
     st.header("Recent Searches")
     if st.session_state.search_history:
-        recent_books = original_df.loc[[t for t in st.session_state.search_history if t in original_df.index]]
-        render_horizontal_cards(recent_books)
+        if st.session_state.get("is_mobile", False):
+            st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
+            for title in st.session_state.search_history:
+                if title in original_df.index:
+                    render_goodreads_card(original_df.loc[title])
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            cols = st.columns(5)
+            for i, title in enumerate(st.session_state.search_history):
+                if title in original_df.index:
+                    with cols[i % 5]:
+                        render_goodreads_card(original_df.loc[title])
         if st.button("🗑️ Clear History", type="secondary", use_container_width=True):
             st.session_state.search_history = []
             st.rerun()
@@ -326,12 +343,14 @@ elif page == "About Us":
     Nova Books is my passion project — a smart book recommender built from scratch using machine learning.
     I believe great books change lives, and I wanted to create a beautiful way to help people discover their next favorite read.
     """)
+
     st.markdown("<h3 style='color:#FF4B4B; font-size:20px; margin-top:30px;'>Project Info</h3>", unsafe_allow_html=True)
     st.markdown("""
     <span style='color:#FF6B6B;'>Nova Books</span> is a content-based recommender system using **TF-IDF + cosine similarity** on book title, author, description, and genres.
     It matches books with similar content — simple, fast, and accurate.
     This is an intermediate ML project focused on clean design and real usability.
     """, unsafe_allow_html=True)
+
     st.markdown("<h3 style='color:#FF4B4B; font-size:20px; margin-top:30px;'>Connect With Me</h3>", unsafe_allow_html=True)
     st.markdown("""
     <div style="display:flex; flex-direction:column; gap:18px; margin-top:25px; font-size:16px;">
@@ -349,8 +368,24 @@ elif page == "About Us":
         </div>
     </div>
     """, unsafe_allow_html=True)
+
     st.markdown("<p style='margin-top:40px; color:#ccc; font-size:16px;'>Thank you for using Nova Books! Let's discover amazing stories together 📚🧡.</p>", unsafe_allow_html=True)
 
 # FOOTER
 st.markdown("---")
 st.caption("© Built by Muhammad Haris Afridi | Powered by Streamlit & Hugging Face")
+
+# Detect mobile (simple way using JS - runs once)
+if 'is_mobile' not in st.session_state:
+    st.session_state.is_mobile = st._is_running_with_streamlit and "mobile" in st.get_option("theme.base").lower() or False  # fallback
+    # Better detection
+    js = '''
+    <script>
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            parent.document.querySelector("iframe").style.width = "100%";
+        }
+        window.parent.document.dispatchEvent(new CustomEvent("mobile_detected", {detail: isMobile}));
+    </script>
+    '''
+    st.components.v1.html(js, height=0)
