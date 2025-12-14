@@ -127,7 +127,7 @@ def get_popular_genres():
 
 popular_genres = get_popular_genres()
 
-# BOOK CARD STYLE - BIGGER COVERS ON MOBILE
+# BOOK CARD STYLE - ORIGINAL SIZES
 def render_goodreads_card(row):
     cover = get_cover_url(row.get('Cover_URL', ''))
     title = row['Book']
@@ -135,20 +135,20 @@ def render_goodreads_card(row):
     rating = row.get('Avg_Rating', 'N/A')
     genres = top_two_genres(row.get('Genres', ''))
     url = row.get('URL', '#')
-    genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:11px;'>{g}</small>" for g in genres])
+    genre_tags = " ".join([f"<small style='background:#333; color:white; padding:3px 8px; border-radius:12px; margin:2px; font-size:12px;'>{g}</small>" for g in genres])
     card_html = f"""
     <div class="book-card">
-        <img src="{cover}" class="cover-img">
-        <h4 class="book-title">{title}</h4>
-        <p class="book-author">Author: {author}</p>
-        <p class="book-rating">⭐ {rating}</p>
-        <div class="genre-tags">{genre_tags}</div>
-        <a href="{url}" target="_blank" class="goodreads-link">View on Goodreads →</a>
+        <img src="{cover}" style="width:130px; height:200px; object-fit:cover; border-radius:8px;">
+        <h4 style="margin:8px 0 2px; font-size:16px; color:white;">{title}</h4>
+        <p style="color:#aaa; margin:2px 0; font-size:13px;">Author: {author}</p>
+        <p style="color:#FFD700; margin:4px 0;">⭐ {rating}</p>
+        <div style="margin:6px 0;">{genre_tags}</div>
+        <a href="{url}" target="_blank" style="color:#FF4B4B; font-size:13px; text-decoration:none;">View on Goodreads →</a>
     </div>
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-# STYLES - LARGER BOOK COVERS ON MOBILE + SMOOTH HORIZONTAL SCROLL
+# STYLES - FIXED MOBILE HORIZONTAL SCROLL, NO SIZE CHANGES
 st.markdown(
     """
     <style>
@@ -156,6 +156,9 @@ st.markdown(
            animation: glow 2.5s ease-in-out infinite;}
     @keyframes glow {0%,100% {text-shadow:0 0 5px #FF4B4B;} 50% {text-shadow:0 0 25px #FF4B4B;}}
     .sub {text-align:center; color:#aaa; font-size:18px; margin-bottom:30px;}
+    .book-card {background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; text-align:center;
+                box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:all 0.3s ease; cursor:pointer;}
+    .book-card:hover {transform:scale(1.08) translateY(-5px); box-shadow:0 0 25px rgba(255,80,80,0.55);}
 
     /* Horizontal scrolling container */
     .cards-container {
@@ -163,13 +166,14 @@ st.markdown(
         overflow-x: auto;
         overflow-y: hidden;
         gap: 15px;
-        padding: 10px 0 40px 0;
+        padding: 10px 0 30px 0;
+        scrollbar-width: thin;
+        scroll-padding-bottom: 20px;
         -webkit-overflow-scrolling: touch;
         touch-action: pan-x;
-        scrollbar-width: thin;
     }
     .cards-container::-webkit-scrollbar {
-        height: 12px;
+        height: 10px;
     }
     .cards-container::-webkit-scrollbar-thumb {
         background: #FF4B4B;
@@ -179,45 +183,13 @@ st.markdown(
         background: rgba(0,0,0,0.1);
     }
 
-    .book-card {
-        background:rgba(255,255,255,0.05);
-        padding:12px;
-        border-radius:12px;
-        text-align:center;
-        box-shadow:0 4px 12px rgba(0,0,0,0.2);
-        flex: 0 0 160px; /* Desktop card width */
-        transition:all 0.3s ease;
-        cursor:pointer;
-    }
-    .book-card:hover {
-        transform:scale(1.08) translateY(-5px);
-        box-shadow:0 0 25px rgba(255,80,80,0.55);
-    }
-
-    .cover-img {
-        width:130px;
-        height:200px;
-        object-fit:cover;
-        border-radius:8px;
-    }
-    .book-title {margin:8px 0 2px; font-size:15px; color:white; line-height:1.2;}
-    .book-author {color:#aaa; margin:2px 0; font-size:12px;}
-    .book-rating {color:#FFD700; margin:4px 0; font-size:13px;}
-    .goodreads-link {color:#FF4B4B; font-size:12px; text-decoration:none;}
-
-    /* MOBILE OPTIMIZATIONS - BIGGER COVERS & CARDS */
+    /* Mobile tweaks - smaller text only, no image/card size changes */
     @media (max-width: 768px) {
-        .book-card {
-            flex: 0 0 200px; /* Wider card on mobile */
-        }
-        .cover-img {
-            width: 160px !important;   /* Bigger cover */
-            height: 240px !important;  /* Taller for impact */
-        }
-        .book-title {font-size: 14px !important;}
-        .book-author {font-size: 11px !important;}
-        .book-rating {font-size: 12px !important;}
-        .goodreads-link {font-size: 11px !important;}
+        .book-card h4 {font-size:14px !important;}
+        .book-card p {font-size:12px !important;}
+        .book-card a {font-size:12px !important;}
+        .book-card small {font-size:11px !important;}
+        .book-card {flex: 0 0 160px;} /* Consistent width */
     }
     </style>
     <div class="glow">📚 Nova Books Recommender </div>
@@ -244,11 +216,11 @@ def render_horizontal_cards(df_batch):
             render_goodreads_card(row)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# PAGES (unchanged)
+# PAGES
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
-   
+    
     if book:
         if book != st.session_state.current_book:
             st.session_state.current_book = book
@@ -270,7 +242,7 @@ if page == "Search by Book":
         if st.button("SHOW ME 5 SIMILAR BOOKS", type="primary", use_container_width=True):
             with st.spinner("Finding similar books..."):
                 recs = get_similar_books(book, n=5)
-            st.subheader("Recommended Books")
+            st.subheader("Recommended Books")  # Recommendations directly below
             render_horizontal_cards(recs)
 
 elif page == "Search by Author":
@@ -280,8 +252,8 @@ elif page == "Search by Author":
         books = get_author_books(author)
         total = len(books)
         page_num = st.session_state.author_page
-        start = page_num * 10
-        end = min(start + 10, total)
+        start = page_num * 5  # Back to 5 per page for consistency
+        end = min(start + 5, total)
         batch = books.iloc[start:end]
         st.subheader(f"Books by {author} (Page {page_num + 1})")
         render_horizontal_cards(batch)
@@ -305,8 +277,8 @@ elif page == "Search by Genre":
         books = get_genre_books(genre, n=50)
         total = len(books)
         page_num = st.session_state.genre_page
-        start = page_num * 10
-        end = min(start + 10, total)
+        start = page_num * 5
+        end = min(start + 5, total)
         batch = books.iloc[start:end]
         st.subheader(f"Top Books in {genre} (Page {page_num + 1})")
         render_horizontal_cards(batch)
@@ -336,6 +308,7 @@ elif page == "Recent Searches":
 
 elif page == "About Us":
     st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>Muhammad Haris Afridi</h2>", unsafe_allow_html=True)
+    
     st.markdown("""
     Hey there! I'm a self-taught developer with a deep love for books, AI, and building things that make life better.
     Nova Books is my passion project — a smart book recommender built from scratch using machine learning.
