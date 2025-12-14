@@ -164,7 +164,7 @@ st.markdown(
                 box-shadow:0 4px 12px rgba(0,0,0,0.2); margin:5px 0; transition:all 0.3s ease; cursor:pointer;}
     .book-card:hover {transform:scale(1.08) translateY(-5px); box-shadow:0 0 25px rgba(255,80,80,0.55);}
     </style>
-    <div class="glow">📚 Nova Books Recommendation System </div>
+    <div class="glow">📚 Nova Books Recommender </div>
     <div class="sub">We Wish to Recommend Your Desired Books 🧡</div>
     """,
     unsafe_allow_html=True
@@ -325,3 +325,4 @@ elif page == "About Us":
 # FOOTER
 st.markdown("---")
 st.caption("© Built by Muhammad Haris Afridi | Powered by Streamlit & Hugging Face")
+
