@@ -3,4 +3,3 @@ pandas
 numpy
 scikit-learn
 requests
-gzip  # Usually not needed as it's in the standard library, but harmless to include
