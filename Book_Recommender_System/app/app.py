@@ -148,7 +148,7 @@ def render_goodreads_card(row):
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-# STYLES - IMPROVED FOR MOBILE HORIZONTAL SCROLL
+# STYLES - FIXED SCROLLBAR POSITION (BOTTOM ON ALL DEVICES)
 st.markdown(
     """
     <style>
@@ -162,15 +162,20 @@ st.markdown(
         display: flex;
         overflow-x: auto;
         gap: 15px;
-        padding: 10px 0;
+        padding: 10px 0 30px 0; /* Extra bottom padding for scrollbar space */
         scrollbar-width: thin;
+        scroll-padding-bottom: 20px; /* Forces scrollbar to bottom */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     .cards-container::-webkit-scrollbar {
-        height: 8px;
+        height: 10px; /* Thicker for visibility */
     }
     .cards-container::-webkit-scrollbar-thumb {
         background: #FF4B4B;
         border-radius: 10px;
+    }
+    .cards-container::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
     }
 
     .book-card {
@@ -179,7 +184,7 @@ st.markdown(
         border-radius:12px;
         text-align:center;
         box-shadow:0 4px 12px rgba(0,0,0,0.2);
-        flex: 0 0 160px; /* Fixed width for consistent cards */
+        flex: 0 0 160px;
         transition:all 0.3s ease;
         cursor:pointer;
     }
@@ -218,7 +223,7 @@ def render_horizontal_cards(df_batch):
             render_goodreads_card(row)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# PAGES
+# PAGES (unchanged from last version)
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
@@ -254,7 +259,7 @@ elif page == "Search by Author":
         books = get_author_books(author)
         total = len(books)
         page_num = st.session_state.author_page
-        start = page_num * 10  # Show 10 per page for better mobile experience
+        start = page_num * 10
         end = min(start + 10, total)
         batch = books.iloc[start:end]
         st.subheader(f"Books by {author} (Page {page_num + 1})")
