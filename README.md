@@ -35,7 +35,7 @@ This project is ideal for:
 
 ## Why This Project Matters
 
-Book lovers often struggle to find their next read. Traditional platforms rely on popularity or ratings, but many hidden gems go unnoticed.
+I had Always struggled to find what should I read next , And I thought of people like me , who are books lovers and wants to read the books similar to thier type or the ones that they had already read . Traditional platforms on the other hand rely on popularity or ratings, but many hidden gems go unnoticed. So I felt the need to create such a project , that can help people. 
 
 Nova Books introduces a **content-driven, intelligent discovery tool** that matches books based on semantic similarity — perfect for niche tastes.
 
