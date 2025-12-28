@@ -1,5 +1,3 @@
-ging Face")
-
 # app/app.py
 
 import streamlit as st
