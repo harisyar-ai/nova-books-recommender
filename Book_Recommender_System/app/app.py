@@ -9,16 +9,20 @@ from collections import Counter
 import numpy as np
 import gzip
 import os
-import requests  # Added for downloading from Hugging Face
+import requests  # For downloading from Hugging Face
+
 
 # PAGE CONFIG
+
 st.set_page_config(
     page_title="Nova Books Recommender",
     page_icon="📚",
     layout="wide"
 )
 
+
 # SESSION STATE
+
 if 'preloaded_recs' not in st.session_state:
     st.session_state.preloaded_recs = None
 if 'current_book' not in st.session_state:
@@ -34,7 +38,9 @@ if 'author_page' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state.search_history = []
 
-# LOAD ARTIFACTS - FROM HUGGING FACE (SILENT & CLEAN)
+
+# LOAD ARTIFACTS - FROM HUGGING FACE
+
 @st.cache_resource
 def load_artifacts():
     file_url = "https://huggingface.co/harisyar/nova-books-recommender/resolve/main/tfidf_features.pkl.gz"
@@ -43,12 +49,10 @@ def load_artifacts():
     os.makedirs("models", exist_ok=True)
     
     if not os.path.exists(local_path):
-        with st.spinner("Loading book model for the first time (14MB)... This takes just a moment."):
-            response = requests.get(file_url)
-            response.raise_for_status()
-            with open(local_path, "wb") as f:
-                f.write(response.content)
-        st.success("✅ Model ready! Enjoy discovering books.", icon="📚")
+        response = requests.get(file_url)
+        response.raise_for_status()
+        with open(local_path, "wb") as f:
+            f.write(response.content)
     
     with gzip.open(local_path, "rb") as f:
         artifacts = pickle.load(f)
@@ -67,7 +71,9 @@ if "Cover_URL" not in original_df.columns:
     st.error("Your dataframe must contain a 'Cover_URL' column.")
     st.stop()
 
+
 # HELPERS
+
 @st.cache_data
 def get_cover_url(cover_value):
     if pd.notna(cover_value) and str(cover_value).strip() not in ['', 'nan']:
@@ -93,7 +99,9 @@ def top_two_genres(genres_field):
             return parts[:2]
     return [s] if s else []
 
+
 # RECOMMENDERS
+
 @st.cache_data
 def get_similar_books(book_title, n=5):
     if book_title not in original_df.index:
@@ -128,7 +136,9 @@ def get_popular_genres():
 
 popular_genres = get_popular_genres()
 
-# BOOK CARD STYLE - YOUR ORIGINAL (NO CHANGES TO SIZES ANYWHERE)
+
+# BOOK CARD STYLE
+
 def render_goodreads_card(row):
     cover = get_cover_url(row.get('Cover_URL', ''))
     title = row['Book']
@@ -152,7 +162,9 @@ def render_goodreads_card(row):
 
     st.markdown(card_html, unsafe_allow_html=True)
 
-# STYLES - YOUR ORIGINAL (NO MOBILE SIZE CHANGES AT ALL)
+
+# STYLES (with hover animation + mobile responsive)
+
 st.markdown(
     """
     <style>
@@ -170,7 +182,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
 # SIDEBAR NAVIGATION
+
 with st.sidebar:
     st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>Navigation</h2>", unsafe_allow_html=True)
     page = st.radio(
@@ -179,7 +193,8 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-# PAGES - YOUR ORIGINAL 5-COLUMN GRID EVERYWHERE (NO MOBILE CHANGES)
+# PAGES
+
 if page == "Search by Book":
     st.header("Find Similar Books")
     book = st.selectbox("Select a Book:", [""] + list(original_df["Book"].unique()))
@@ -215,7 +230,7 @@ if page == "Search by Book":
 
 elif page == "Search by Author":
     st.header("Books by Author")
-    author = st.selectbox("Select Author:", [""] + list(original_df["Author"].unique()))
+    author = st.selectbox("Select Author:", [""] + list(original_df["Author"].unique()))  # Unsorted
     if author:
         books = get_author_books(author)
         total = len(books)
@@ -287,13 +302,13 @@ elif page == "Recent Searches":
         st.info("No recent searches yet.")
 
 elif page == "About Us":
-    st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>Muhammad Haris Afridi</h2>", unsafe_allow_html=True)
-    
+    st.markdown("<h2 style='color:#FF4B4B; font-size:24px; margin-bottom:20px;'>About Me</h2>", unsafe_allow_html=True)
+
     st.markdown("""
-    Hey there! I'm a self-taught developer with a deep love for books, AI, and building things that make life better.
+    Hi i am <span style='color:#FF6B6B;'>Muhammad Haris Afridi</span>, a self-taught developer with a deep love for books, AI, and building things that make life better.
     Nova Books is my passion project — a smart book recommender built from scratch using machine learning.
     I believe great books change lives, and I wanted to create a beautiful way to help people discover their next favorite read.
-    """)
+    """, unsafe_allow_html=True)
 
     st.markdown("<h3 style='color:#FF4B4B; font-size:20px; margin-top:30px;'>Project Info</h3>", unsafe_allow_html=True)
     st.markdown("""
@@ -320,8 +335,7 @@ elif page == "About Us":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<p style='margin-top:40px; color:#ccc; font-size:16px;'>Thank you for using Nova Books! Let's discover amazing stories together 📚🧡.</p>", unsafe_allow_html=True)
-
 # FOOTER
+
 st.markdown("---")
 st.caption("© Built by Muhammad Haris Afridi | Powered by Streamlit & Hugging Face")
