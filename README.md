@@ -26,10 +26,10 @@ Instead, it analyzes the actual content of each book — title, author, descript
 
 This project is ideal for:
 
-- Personalized book discovery without user data
-- Learning **NLP-based recommendation systems** with TF-IDF
-- Exploring real-time cover image integration
-- Building a fully deployable, responsive **Streamlit** web app
+- Personalized book discovery without user data,
+- Learning **NLP-based recommendation systems** with TF-IDF,
+- Exploring real-time cover image integration,
+- Building a fully deployable, responsive **Streamlit** web app.
 
 ---
 
@@ -40,16 +40,16 @@ I had Always struggled to find what should I read next , And I thought of people
 Nova Books introduces a **content-driven, intelligent discovery tool** that matches books based on semantic similarity — perfect for niche tastes.
 
 **Key problems solved**  
-- Over-reliance on popularity/ratings  
-- Difficulty finding books with similar "vibe" or themes  
-- Lack of simple, fast, content-focused recommenders  
-- Slow manual searching across platforms  
+- Over-reliance on popularity/ratings,  
+- Difficulty finding books with similar "vibe" or themes,  
+- Lack of simple, fast, content-focused recommenders,  
+- Slow manual searching across platforms.  
 
 **Who benefits**  
-- Avid readers looking for hidden gems  
-- Students learning NLP & recommendation systems  
-- Developers building content-based search tools  
-- Book clubs & librarians  
+- Avid readers looking for hidden gems,  
+- Students learning NLP & recommendation systems,  
+- Developers building content-based search tools,  
+- Book clubs & librarians.  
 
 ---
 
