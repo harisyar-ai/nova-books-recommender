@@ -15,6 +15,16 @@
 </div>
 
 ---
+## Live Web App
+
+<div style="padding:10px; font-size:100%; text-align:left;">
+    URL: 
+    <a href="https://nova-books-recommender.streamlit.app/" target="_blank">
+        Click here for Nova Books Recommender
+    </a>
+</div>
+
+---
 
 ## Project Overview
 
@@ -49,18 +59,7 @@ Nova Books introduces a **content-driven, intelligent discovery tool** that matc
 - Avid readers looking for hidden gems,  
 - Students learning NLP & recommendation systems,  
 - Developers building content-based search tools,  
-- Book clubs & librarians.  
-
----
-
-## Live Web App
-
-<div style="padding:10px; font-size:100%; text-align:left;">
-    URL: 
-    <a href="https://nova-books-recommender.streamlit.app/" target="_blank">
-        Click here for Nova Books Recommender
-    </a>
-</div>
+- Book clubs & librarians.
 
 ---
 
