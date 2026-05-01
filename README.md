@@ -174,16 +174,6 @@ The original dataset lacked book covers. I built a **hybrid scraper** (Goodreads
 
 ---
 
-## Run Locally
-```bash
-git clone https://github.com/harisyar-ai/nova-books-recommender.git
-cd nova-books-recommender
-pip install -r requirements.txt
-streamlit run app/streamlit_app.py
-```
-
----
-
 ## Future Improvements
 
 - Add BERT/Sentence Transformers for deeper semantic understanding  
