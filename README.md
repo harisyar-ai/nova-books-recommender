@@ -81,6 +81,15 @@ Nova Books introduces a **content-driven, intelligent discovery tool** that matc
 
 This project uses the **Global Book Insights Dataset**, a high-quality public dataset designed specifically for recommendation and NLP applications.
 
+### **Dataset Link**
+<div style="padding:10px; font-size:100%; text-align:left;">
+    Used Dataset: 
+    <a href="https://www.opendatabay.com/data/ai-ml/11680306-2393-422b-871a-2e57b673b6ac" target="_blank">
+        Click here for the Global Book Insights Dataset (OpenDataBay)
+    </a>
+</div>
+
+
 ### **Entries**
 - 10,000 books
 
@@ -108,14 +117,6 @@ The original dataset lacked book covers. I built a **hybrid scraper** (Goodreads
 
 ### **License**
 - CC0 — completely free to use, modify, and distribute.
-
-### **Dataset Link**
-<div style="padding:10px; font-size:100%; text-align:left;">
-    Used Dataset: 
-    <a href="https://www.opendatabay.com/data/ai-ml/11680306-2393-422b-871a-2e57b673b6ac" target="_blank">
-        Click here for the Global Book Insights Dataset (OpenDataBay)
-    </a>
-</div>
 
 ---
 
