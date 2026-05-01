@@ -85,7 +85,7 @@ This project uses the **Global Book Insights Dataset**, a high-quality public da
 <div style="padding:10px; font-size:100%; text-align:left;">
     Used Dataset: 
     <a href="https://www.opendatabay.com/data/ai-ml/11680306-2393-422b-871a-2e57b673b6ac" target="_blank">
-        Click here for the Global Book Insights Dataset (OpenDataBay)
+        Click here for the Global Book Insights Dataset
     </a>
 </div>
 
