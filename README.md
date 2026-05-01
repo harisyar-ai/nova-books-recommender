@@ -1,5 +1,5 @@
 # Nova Books Recommendation System 2025
-#### NLP-Based Content Recommender Using TF-IDF & Cosine Similarity
+### NLP-Based Content Recommender Using TF-IDF & Cosine Similarity
 
 <div align="center">
   <img src="Books_banner.jpeg" alt="Nova Books Recommender" width="95%">
